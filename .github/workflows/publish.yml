@@ -2,14 +2,21 @@
 # anywhere. PyPI knows this repository, this file name and the `pypi` environment as the publisher.
 #
 # A published GitHub release triggers the PyPI upload; the same click archives the release on Zenodo.
-# Run the workflow by hand (workflow_dispatch) to upload to TestPyPI instead, which needs the
-# equivalent publisher registered on test.pypi.org under the `testpypi` environment.
+# Run the workflow by hand (workflow_dispatch) to upload to TestPyPI, which needs the equivalent
+# publisher registered on test.pypi.org under the `testpypi` environment, or to PyPI with
+# target=pypi when a release did not trigger it.
 name: Publish
 
 on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      target:
+        description: Where to upload
+        type: choice
+        options: [testpypi, pypi]
+        default: testpypi
 
 jobs:
   build:
@@ -32,7 +39,7 @@ jobs:
           if-no-files-found: error
 
   publish-pypi:
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' || inputs.target == 'pypi'
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -48,7 +55,7 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@v1.14.2
 
   publish-testpypi:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
     needs: build
     runs-on: ubuntu-latest
     environment:

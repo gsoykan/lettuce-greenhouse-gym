@@ -1,5 +1,7 @@
 # lettuce-greenhouse-gym
 
+[![DOI](https://zenodo.org/badge/1307746742.svg)](https://doi.org/10.5281/zenodo.22675147)
+
 A [Gymnasium](https://gymnasium.farama.org/) environment for the van Henten lettuce greenhouse:
 the reduced four-state climate/crop model that has become the standard benchmark for comparing
 reinforcement learning, model predictive control, and hybrid controllers in greenhouse climate
@@ -551,7 +553,8 @@ Equation numbers quoted in the source refer to the 2003 paper.
 ## Citing this package
 
 A machine-readable `CITATION.cff` is in the repository root (GitHub shows a *Cite this repository*
-button from it). Please also cite the van Henten papers above, which define the model.
+button from it), and every release is archived on Zenodo; the badge above resolves to the latest
+version's DOI. Please also cite the van Henten papers above, which define the model.
 
 ```bibtex
 @software{soykan2026lettucegreenhousegym,
@@ -559,6 +562,7 @@ button from it). Please also cite the van Henten papers above, which define the 
   title   = {lettuce-greenhouse-gym: a Gymnasium environment for the van Henten lettuce greenhouse model},
   year    = {2026},
   version = {0.1.0},
+  doi     = {10.5281/zenodo.22675147},
   url     = {https://github.com/gsoykan/lettuce-greenhouse-gym},
 }
 ```
