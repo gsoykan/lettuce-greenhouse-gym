@@ -7,7 +7,7 @@ authors:
     given-names: "Gürkan"
     email: "gurkan.soykan@wur.nl"
     affiliation: "Wageningen University & Research"
-version: 0.1.1
+version: 0.1.2
 date-released: "2026-09-09"
 doi: 10.5281/zenodo.22675147
 license: Apache-2.0

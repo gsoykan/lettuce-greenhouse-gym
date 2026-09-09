@@ -124,12 +124,28 @@ class LettuceGreenhouseEnv(gymnasium.Env[NDArray[np.float32], NDArray[np.floatin
         self._started = False
         self._parameters: ParameterSet = self.model.constants
         self._c = self._parameters.to_array()
+        self._c_used = self._c
         self._scenario: WeatherScenario | None = None
         self._series: WeatherSeries | None = None
         self._weather = np.zeros((self.model.exogenous.size, 0))
         self._x = self._x0.copy()
         self._u_prev = self._u0.copy()
         self._step_index = 0
+
+    @property
+    def observation_layout(self) -> tuple[tuple[str, slice], ...]:
+        """The observation's blocks as ``(name, slice)`` pairs, in order.
+
+        Names: ``observables``, ``previous_control``, ``timestep``, ``weather`` (whichever the config
+        switches on). Code that reads or replaces one part of the observation, an estimator that
+        wants the observables and controls, a wrapper that maps entries to graph nodes, takes its
+        indices from here instead of counting positions.
+        """
+        out, start = [], 0
+        for name, lo, _ in self._layout:
+            out.append((name, slice(start, start + lo.size)))
+            start += lo.size
+        return tuple(out)
 
     def _build_observation_layout(self) -> list[tuple[str, NDArray, NDArray]]:
         """The observation's blocks in order, as ``(name, low, high)``::
@@ -265,14 +281,28 @@ class LettuceGreenhouseEnv(gymnasium.Env[NDArray[np.float32], NDArray[np.floatin
         self._weather = self._episode_weather()
 
         self._parameters = self.parameter_provider.sample(self.np_random)
-        self._c = self._parameters.to_array()
+        self._c_used = self._parameters.to_array()
+        self._step_index = 0
+        self._draw_parameters()  # the coefficients of transition 0, known before the first action
 
         # the crop always starts as a transplant; start_day moves the calendar, not the crop
         self._x = self._x0.copy()
         self._u_prev = self._u0.copy()
-        self._step_index = 0
         self._started = True
         return self._observation(), self._info()
+
+    def _draw_parameters(self) -> None:
+        """Ask the provider for the coefficients of the transition about to happen.
+
+        Called at reset and after every transition, so the set the env reports in the observation
+        (through a wrapper) and in ``info["params"]`` is the set the *next* transition will use. A
+        controller told the context is then told the truth about what comes, whether the provider
+        holds the set for a season or redraws it every step.
+        """
+        updated = self.parameter_provider.step(self.np_random, self._step_index, self._parameters)
+        if updated is not None:
+            self._parameters = updated
+        self._c = self._parameters.to_array()
 
     def step(
         self, action: NDArray[np.floating]
@@ -286,13 +316,10 @@ class LettuceGreenhouseEnv(gymnasium.Env[NDArray[np.float32], NDArray[np.floatin
         t = self._step_index * self.config.dt
         u = self.decode_action(action)
         v = self._weather[:, self._step_index]
-        updated = self.parameter_provider.step(self.np_random, self._step_index, self._parameters)
-        if updated is not None:  # the provider's per-step hook: the new set drives this transition
-            self._parameters = updated
-            self._c = self._parameters.to_array()
+        c = self._c  # drawn before this step's observation was emitted; see _draw_parameters
 
         x_prev = self._x
-        x_next = np.asarray(self._F(x_prev, u, v, self._c)).ravel()
+        x_next = np.asarray(self._F(x_prev, u, v, c)).ravel()
         if not np.all(np.isfinite(x_next)):
             # raise rather than silently truncating: F clamps to the state bounds, so a non-finite
             # state means something is genuinely wrong: a pathological parameter set, or the 0/0
@@ -305,30 +332,41 @@ class LettuceGreenhouseEnv(gymnasium.Env[NDArray[np.float32], NDArray[np.floatin
         self._x = x_next
         self._u_prev = u
         self._step_index += 1
+        self._c_used = c
 
         y = np.asarray(self._g(x_next)).ravel()
         reward, breakdown = self.reward(
-            RewardContext(
-                x_prev=x_prev, x_next=x_next, u=u, v=v, y=y, c=self._c, t=t, dt=self.config.dt
-            )
+            RewardContext(x_prev=x_prev, x_next=x_next, u=u, v=v, y=y, c=c, t=t, dt=self.config.dt)
         )
 
-        # The season ends in harvest, so the horizon belongs to the task: this is a terminal state
-        # of the MDP, not an externally imposed time limit. Reporting it as truncation would make
-        # value estimates bootstrap past a point where no future reward exists. `truncated` stays
-        # reserved for genuinely abnormal endings.
-        terminated = self._step_index >= self.config.n_steps
-        return self._observation(), float(reward), terminated, False, self._info(breakdown)
+        ended = self._step_index >= self.config.n_steps
+        if not ended:
+            self._draw_parameters()  # the next transition's coefficients, before its observation
+        # The season ends in harvest. By default that is a terminal state of the MDP, not a time
+        # limit, so value estimates must not bootstrap past it; ``terminal_at_harvest=False`` reports
+        # it as truncation instead, for studies that want the bootstrapped convention.
+        terminal = self.config.terminal_at_harvest
+        return (
+            self._observation(),
+            float(reward),
+            ended and terminal,
+            ended and not terminal,
+            self._info(breakdown),
+        )
 
     def _info(self, breakdown: dict[str, float] | None = None) -> dict[str, Any]:
         """Diagnostics the policy never sees; wrappers, loggers and evaluation code do.
 
-        ``params`` is the exo seam: the episode's physical coefficients, raw and **unnormalised**,
-        with their names. Normalising against a training range is a research choice, so it belongs
-        to a wrapper rather than to the environment.
+        ``params`` is the context seam: the physical coefficients the **next** transition will use,
+        raw and unnormalised, with their names, so a wrapper that appends them to the observation
+        tells the policy the truth about what comes. ``params_used`` is the set that drove the
+        transition just taken (equal to ``params`` at reset and whenever the provider holds a set
+        for the season); a wrapper disclosing the *last-used* value reads that one instead.
+        Normalising against a training range is a research choice and belongs to a wrapper.
         """
         info: dict = {
             "params": self._c.copy(),
+            "params_used": self._c_used.copy(),
             "param_names": self._parameters.names,
             "control": self._u_prev.copy(),
             "weather_source": self._scenario.source if self._scenario else None,
@@ -447,6 +485,7 @@ class LettuceGreenhouseEnv(gymnasium.Env[NDArray[np.float32], NDArray[np.floatin
         self._step_index = int(state.step_index)
         self._parameters = state.parameters
         self._c = state.parameters.to_array()
+        self._c_used = self._c
         return self._observation()
 
     def encode_control(self, u: NDArray[np.floating]) -> NDArray[np.float64]:

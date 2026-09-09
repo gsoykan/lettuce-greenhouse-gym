@@ -3,6 +3,24 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.1.2] - 2026-09-10
+
+### Fixed
+
+- A provider's per-transition draw now happens **before** the observation that precedes the
+  transition, at reset for transition 0 and after each transition for the next. Previously the draw
+  happened inside `step()` after the action was chosen, so a wrapper appending the coefficients to
+  the observation told the policy the *previous* draw under per-step randomisation. `info["params"]`
+  now reports the coefficients the next transition will use; the new `info["params_used"]` keeps the
+  set that drove the last one, so both disclosure conventions can be built. Per-season providers are
+  unaffected; per-step RNG streams change.
+
+### Added
+
+- `EnvConfig.terminal_at_harvest`: report the end of the season as `truncated` instead of
+  `terminated`, for formulations that bootstrap through the horizon. `run_episode` stops on either.
+- `LettuceGreenhouseEnv.observation_layout`: the observation's blocks as `(name, slice)` pairs.
+
 ## [0.1.1] - 2026-09-09
 
 ### Changed

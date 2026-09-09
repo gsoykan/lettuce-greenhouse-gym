@@ -11,6 +11,7 @@ Every key is optional and defaults to the benchmark; the canonical form written 
       absolute_rate_limit: false   # absolute mode only: clip the level to du_max around the previous control
       include_previous_control: true
       include_timestep: true
+      terminal_at_harvest: true    # false: report the season's end as truncated (bootstrap through it)
       timestep_encoding: progress   # or index (raw step counter)
       weather_window: 1
       reward:

@@ -78,8 +78,8 @@ the integrator.
 | action space | `Box(-1, 1, (3,))`, **delta** mode: `u_next = clip(u_prev + a · du_max, lo, hi)` |
 | observation | 12 floats: observables `y` (4), previous control (3), season progress (1), current weather (4) |
 | reward | per-step profit `price · Δdry_weight − energy_cost − co2_cost` minus hinge penalties outside the comfort bands (CO₂ 500–1600 ppm, temperature 10–20 °C, RH ≤ 80 %) |
-| episode end | `terminated=True` at harvest (the season is a terminal state, not a time limit); `truncated` is never set and no `TimeLimit` wrapper is registered |
-| `info` | reward breakdown (`revenue`, `energy_cost`, `co2_cost`, `penalty_*`, …), `params`/`param_names` (the coefficient vector in effect), `start_day` |
+| episode end | `terminated=True` at harvest (the season is a terminal state, not a time limit); `terminal_at_harvest=False` reports it as `truncated` instead, for formulations that bootstrap through it |
+| `info` | reward breakdown (`revenue`, `energy_cost`, `co2_cost`, `penalty_*`, …), `params`/`param_names` (the coefficients the next transition will use), `params_used` (those that drove the last one), `start_day` |
 
 ## Configuring experiments
 
@@ -148,10 +148,12 @@ env.reset(seed=0, options={"start_day": 100.0}) # or pin the weather for evaluat
 reward can depend on weather or on the drawn parameters without changes to the library.
 
 Parameters can change at two points, and the env owns only those points: a provider's `sample(rng)`
-is called at `reset`, its `step(rng, step_index, current)` before every transition, and whatever set
-comes back drives the next transition and appears in `info["params"]`. Subclass `ParameterProvider`
-for drift, faults, or anything else; two reference schemes ship: absolute per-name ranges
-(`RandomizedParameterProvider(base, {"leak": (1e-5, 2e-5)})`) and relative scaling of every
+is called at `reset`, its `step(rng, step_index, current)` once per transition, and the set that comes
+back drives that transition. The draw happens *before* the observation preceding the transition is
+emitted, so `info["params"]`, and any wrapper that appends it, report the coefficients about to act,
+never a stale draw; `info["params_used"]` keeps the set that drove the last transition. Subclass
+`ParameterProvider` for drift, faults, or anything else; two reference schemes ship: absolute per-name
+ranges (`RandomizedParameterProvider(base, {"leak": (1e-5, 2e-5)})`) and relative scaling of every
 coefficient by `1 + U(−h, h)` (`RandomizedParameterProvider.relative(base, 0.05)`), each either once
 per episode or, with `per_step=True`, redrawn every step. In a spec the latter is
 `parameters: {relative: 0.05, per_step: true}`; any other scheme is your own provider named by
@@ -184,7 +186,9 @@ RNG untouched, and returns the observation. A controller can therefore roll a po
 current moment under several parameter draws and come back, or place the plant at a chosen state
 and time to generate data. `observe(x, u_prev, step_index)` builds the observation the env would
 emit at a state it is only considering, using the same function `step` uses, so a policy can be
-evaluated along a candidate trajectory without moving the plant.
+evaluated along a candidate trajectory without moving the plant. `observation_layout` names the
+observation's blocks with their slices, so code that reads one part of it takes indices from the env
+rather than counting positions.
 
 ### Swapping the dynamics model
 

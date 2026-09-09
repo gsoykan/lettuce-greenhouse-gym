@@ -1,4 +1,4 @@
-"""Parameter providers: supply the parameter set for an episode (the exo / randomization seam).
+"""Parameter providers: supply the parameter set for an episode (the context / randomisation seam).
 
 A provider decides *which greenhouse the model is* for one episode. ``sample`` receives the RNG from
 the caller (so the env owns seeding and every episode is reproducible from one seed) and returns a
@@ -15,10 +15,12 @@ from .base import ParameterSet
 class ParameterProvider(ABC):
     """Decides which greenhouse the model is, at the two points where that can change.
 
-    The env calls :meth:`sample` once at ``reset`` and :meth:`step` before every transition. What
-    happens there is the study's business (domain randomisation, i.i.d. parameter noise, a drift,
-    a fault on day 20) and the env only guarantees that a returned set drives the next transition
-    and is what ``info["params"]`` and ``env.parameters`` report. Two reference schemes ship below.
+    The env calls :meth:`sample` once at ``reset`` and :meth:`step` once per transition, *before* the
+    observation that precedes that transition is emitted. What happens there is the study's business
+    (domain randomisation, i.i.d. parameter noise, a drift, a fault on day 20); the env guarantees
+    that a returned set drives the transition it was drawn for and is what ``info["params"]``,
+    ``env.parameters`` and a context-observing wrapper report ahead of it. Two reference schemes
+    ship below.
     """
 
     @abstractmethod
@@ -28,9 +30,11 @@ class ParameterProvider(ABC):
     def step(
         self, rng: np.random.Generator, step_index: int, current: ParameterSet
     ) -> ParameterSet | None:
-        """Called before transition ``step_index``; return a new set, or ``None`` to keep ``current``.
+        """The set for transition ``step_index``, or ``None`` to keep ``current``.
 
-        The default keeps the episode's parameters fixed. Override for time-varying behaviour.
+        Called after :meth:`sample` at reset (``step_index`` 0) and after every transition for the
+        next one, so the value is known before the action that meets it. The default keeps the
+        episode's parameters fixed. Override for time-varying behaviour.
         """
         return None
 

@@ -132,11 +132,12 @@ def run_episode(
 
     xs, ys = [env.state], [measure()]
     us, vs, rs, infos = [], [], [], []
-    terminated = False
-    while not terminated:
+    done = False
+    while not done:
         u = controller.control(obs, env)
         vs.append(env.weather_forecast(1)[:, 0])
-        obs, r, terminated, _, info = env.step(env.encode_control(u))
+        obs, r, terminated, truncated, info = env.step(env.encode_control(u))
+        done = terminated or truncated
         extra = controller.step_info()
         if extra:
             info = {**info, "controller": extra}

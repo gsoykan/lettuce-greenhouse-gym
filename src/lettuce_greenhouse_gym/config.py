@@ -159,6 +159,14 @@ class EnvConfig:
     prediction horizon, so offering it to a policy keeps the comparison honest. Wired once weather
     loading exists."""
 
+    terminal_at_harvest: bool = True
+    """Report the end of the season as ``terminated`` (default) or as ``truncated``.
+
+    Harvest ends the task, so by default it is a terminal state and a learner does not bootstrap a
+    value beyond it. Some formulations treat the season as a time limit on an ongoing process and
+    bootstrap through it; ``False`` gives that convention. The two train different policies, so a
+    study that compares with either lineage should state which it used."""
+
     reward: RewardConfig = field(default_factory=benchmark_reward_config)
     """Prices and comfort bands. Plain data, so the whole config stays serialisable."""
 

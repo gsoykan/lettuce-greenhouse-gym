@@ -389,13 +389,15 @@ def test_a_custom_step_hook_can_drift_a_coefficient():
     env = LettuceGreenhouseEnv(SHORT, parameter_provider=Drift(base, SHORT.n_steps))
     env.reset(seed=0)
     leak = env.model.constants.idx("leak")
-    seen = []
+    used, announced = [], []
     for _ in range(3):
         _, _, _, _, info = env.step(np.zeros(3))
-        seen.append(info["params"][leak])
-    expected = [base.get("leak") * (1 + k / SHORT.n_steps) for k in range(3)]
-    np.testing.assert_allclose(seen, expected)
-    assert env.parameters.get("leak") == pytest.approx(expected[-1])
+        used.append(info["params_used"][leak])  # what drove the transition just taken
+        announced.append(info["params"][leak])  # what the next transition will use
+    drift = [base.get("leak") * (1 + k / SHORT.n_steps) for k in range(4)]
+    np.testing.assert_allclose(used, drift[:3])
+    np.testing.assert_allclose(announced, drift[1:])
+    assert env.parameters.get("leak") == pytest.approx(drift[3])
 
 
 # ---- branching an episode: snapshot / restore / observe -------------------------------------------
@@ -591,3 +593,93 @@ def test_parameter_observation_appends_named_coefficients_and_follows_per_step_c
         ParameterObservation(inner, ["nope"])
     with pytest.raises(ValueError, match="not appended"):
         ParameterObservation(inner, ["leak"], {"sat_vp1": (0.0, 1.0)})
+
+
+# ---- disclosure timing: a told policy is told what comes, not what was -------------------------------
+
+
+def test_per_step_context_in_the_observation_is_the_coefficient_the_next_transition_uses():
+    """The defect this pins: under per-step redraws the wrapper used to append the previous draw."""
+    from lettuce_greenhouse_gym import ParameterObservation
+
+    base = ParameterSet.from_defaults(MODEL_COEFFS)
+    i = base.idx("heat_transfer_cover")
+    provider = RandomizedParameterProvider(
+        base, {"heat_transfer_cover": (4.0, 8.0)}, per_step=True
+    )
+    env = ParameterObservation(
+        LettuceGreenhouseEnv(SHORT, parameter_provider=provider), ["heat_transfer_cover"]
+    )
+    obs, info = env.reset(seed=7)
+    for _ in range(5):
+        told = float(obs[-1])
+        assert told == pytest.approx(info["params"][i])
+        obs, _, _, _, info = env.step(np.zeros(3))
+        assert info["params_used"][i] == pytest.approx(told)  # the transition used what was told
+        assert info["params"][i] != pytest.approx(told)  # and a fresh draw is announced next
+
+
+def test_params_and_params_used_coincide_for_a_per_season_provider():
+    provider = RandomizedParameterProvider.relative(ParameterSet.from_defaults(MODEL_COEFFS), 0.05)
+    env = LettuceGreenhouseEnv(SHORT, parameter_provider=provider)
+    _, info = env.reset(seed=0)
+    np.testing.assert_array_equal(info["params"], info["params_used"])
+    _, _, _, _, info = env.step(np.zeros(3))
+    np.testing.assert_array_equal(info["params"], info["params_used"])
+
+
+def test_snapshot_restore_replays_the_same_per_step_draws_and_rewards():
+    provider = RandomizedParameterProvider.relative(
+        ParameterSet.from_defaults(MODEL_COEFFS), 0.1, per_step=True
+    )
+    env = LettuceGreenhouseEnv(SHORT, parameter_provider=provider)
+    env.reset(seed=0)
+    env.step(np.zeros(3))
+    snap = env.snapshot()
+    first = [env.step(np.zeros(3))[1] for _ in range(3)]
+    env.restore(snap)
+    # the RNG is the episode's and moves on: the draws differ, the announced set is restored exactly
+    np.testing.assert_array_equal(env.parameters.to_array(), snap.parameters.to_array())
+    second = [env.step(np.zeros(3))[1] for _ in range(3)]
+    assert first[0] == second[0]  # the first replayed transition uses the restored set
+
+
+# ---- the season's end as termination or truncation ---------------------------------------------------
+
+
+def test_terminal_at_harvest_flag_moves_the_end_of_season_between_terminated_and_truncated():
+    for flag in (True, False):
+        env = LettuceGreenhouseEnv(EnvConfig(episode_days=0.25, terminal_at_harvest=flag))
+        env.reset(seed=0)
+        for k in range(env.config.n_steps):
+            _, _, terminated, truncated, _ = env.step(np.zeros(3))
+            last = k == env.config.n_steps - 1
+            assert terminated is (last and flag)
+            assert truncated is (last and not flag)
+    from lettuce_greenhouse_gym.baselines import AllOff, run_episode
+
+    log = run_episode(
+        LettuceGreenhouseEnv(EnvConfig(episode_days=0.25, terminal_at_harvest=False)),
+        AllOff(),
+        seed=0,
+    )
+    assert log.reward.shape == (EnvConfig(episode_days=0.25).n_steps,)
+
+
+# ---- the observation layout, named ----------------------------------------------------------------
+
+
+def test_observation_layout_names_every_block_with_its_slice():
+    env = LettuceGreenhouseEnv(EnvConfig(episode_days=0.25, weather_window=3))
+    obs, _ = env.reset(seed=0)
+    layout = dict(env.observation_layout)
+    assert list(layout) == ["observables", "previous_control", "timestep", "weather"]
+    assert layout["observables"] == slice(0, 4)
+    assert layout["previous_control"] == slice(4, 7)
+    assert layout["timestep"] == slice(7, 8)
+    assert layout["weather"] == slice(8, 20)
+    np.testing.assert_array_equal(obs[layout["previous_control"]], env.control.astype(np.float32))
+    bare = LettuceGreenhouseEnv(
+        EnvConfig(episode_days=0.25, include_previous_control=False, weather_window=0)
+    )
+    assert [n for n, _ in bare.observation_layout] == ["observables", "timestep"]
