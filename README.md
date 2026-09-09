@@ -566,6 +566,9 @@ button from it). Please also cite the van Henten papers above, which define the 
 ## Development
 
 The reasoning behind the main structural choices is in [`docs/design.md`](docs/design.md).
+Releases: tag `vX.Y.Z` on a commit whose `pyproject.toml` carries that version, publish a GitHub
+release from it, and `.github/workflows/publish.yml` uploads the wheel to PyPI through trusted
+publishing while Zenodo archives the release and mints its DOI.
 
 ```bash
 uv sync --all-extras             # extras are needed for the train/plot tests; they skip without them

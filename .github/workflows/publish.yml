@@ -1,0 +1,66 @@
+# Publishes the package to PyPI through trusted publishing (OpenID Connect): no API token is stored
+# anywhere. PyPI knows this repository, this file name and the `pypi` environment as the publisher.
+#
+# A published GitHub release triggers the PyPI upload; the same click archives the release on Zenodo.
+# Run the workflow by hand (workflow_dispatch) to upload to TestPyPI instead, which needs the
+# equivalent publisher registered on test.pypi.org under the `testpypi` environment.
+name: Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v8.3.2
+      - run: uv python install 3.12
+      - run: uv build
+      - run: uvx twine check dist/*
+      # the tag must match the version the wheel carries, or the release is mislabelled
+      - if: github.event_name == 'release'
+        run: |
+          version=$(ls dist/*.whl | sed -E 's/.*-([0-9][^-]*)-py3.*/\1/')
+          test "v${version}" = "${GITHUB_REF_NAME}" || { echo "wheel ${version} vs tag ${GITHUB_REF_NAME}"; exit 1; }
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish-pypi:
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/lettuce-greenhouse-gym/
+    permissions:
+      id-token: write  # the OIDC token PyPI verifies
+    steps:
+      - uses: actions/download-artifact@v8.0.1
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@v1.14.2
+
+  publish-testpypi:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/lettuce-greenhouse-gym/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8.0.1
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@v1.14.2
+        with:
+          repository-url: https://test.pypi.org/legacy/
