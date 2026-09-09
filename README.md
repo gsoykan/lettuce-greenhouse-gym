@@ -556,8 +556,9 @@ Equation numbers quoted in the source refer to the 2003 paper.
 ## Citing this package
 
 A machine-readable `CITATION.cff` is in the repository root (GitHub shows a *Cite this repository*
-button from it), and every release is archived on Zenodo; the Zenodo record lists a DOI per version
-and one covering all versions. Please also cite the van Henten papers above, which define the model.
+button from it), and every release is archived on Zenodo. The DOI above, `10.5281/zenodo.22675147`,
+is the concept DOI that covers all versions; the Zenodo record lists a DOI per release beneath it.
+Please also cite the van Henten papers above, which define the model.
 
 ```bibtex
 @software{soykan2026lettucegreenhousegym,
