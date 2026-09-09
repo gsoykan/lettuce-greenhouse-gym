@@ -1,6 +1,6 @@
 # lettuce-greenhouse-gym
 
-[![DOI](https://zenodo.org/badge/1307746742.svg)](https://doi.org/10.5281/zenodo.22675146)
+[![DOI](https://zenodo.org/badge/1307746742.svg)](https://doi.org/10.5281/zenodo.22675147)
 
 A [Gymnasium](https://gymnasium.farama.org/) environment for the van Henten lettuce greenhouse:
 the reduced four-state climate/crop model that has become the standard benchmark for comparing
@@ -552,9 +552,8 @@ Equation numbers quoted in the source refer to the 2003 paper.
 ## Citing this package
 
 A machine-readable `CITATION.cff` is in the repository root (GitHub shows a *Cite this repository*
-button from it), and every release is archived on Zenodo. The DOI above is the concept DOI, which
-covers all versions; each release also has its own version DOI on the Zenodo record. Please also
-cite the van Henten papers above, which define the model.
+button from it), and every release is archived on Zenodo; the Zenodo record lists a DOI per version
+and one covering all versions. Please also cite the van Henten papers above, which define the model.
 
 ```bibtex
 @software{soykan2026lettucegreenhousegym,
@@ -562,7 +561,7 @@ cite the van Henten papers above, which define the model.
   title   = {lettuce-greenhouse-gym: a Gymnasium environment for the van Henten lettuce greenhouse model},
   year    = {2026},
   version = {0.1.1},
-  doi     = {10.5281/zenodo.22675146},
+  doi     = {10.5281/zenodo.22675147},
   url     = {https://github.com/gsoykan/lettuce-greenhouse-gym},
 }
 ```
