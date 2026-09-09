@@ -27,11 +27,10 @@ obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
 Requires Python 3.11 or newer.
 
 ```bash
-pip install git+https://github.com/gsoykan/lettuce-greenhouse-gym.git@v0.1.0   # from GitHub
-uv add git+https://github.com/gsoykan/lettuce-greenhouse-gym --tag v0.1.0        # or, in a uv project
+pip install lettuce-greenhouse-gym
+uv add lettuce-greenhouse-gym                                                    # in a uv project
+pip install git+https://github.com/gsoykan/lettuce-greenhouse-gym.git@v0.1.0   # a tagged source install
 ```
-
-A PyPI release (`pip install lettuce-greenhouse-gym`) is planned; until then install from GitHub.
 
 Runtime dependencies: `gymnasium`, `numpy`, `casadi`. The 6 MB weather trace is packaged with the
 wheel; nothing is downloaded at runtime.
