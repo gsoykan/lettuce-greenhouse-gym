@@ -96,6 +96,7 @@ testpaths = "tests/"
 # installed (CI job `typecheck`), on Python >= 3.12: NumPy's stubs use `type` statements.
 [tool.mypy]
 files = ["src/lettuce_greenhouse_gym"]
+mypy_path = "typings"  # a permissive stub for casadi, whose shipped stub mypy cannot parse
 check_untyped_defs = true
 warn_unused_ignores = true
 warn_redundant_casts = true
@@ -103,8 +104,9 @@ warn_unreachable = true
 no_implicit_optional = true
 
 [[tool.mypy.overrides]]
-# ship no type information (casadi, PyYAML), or are optional and may be absent (stable-baselines3)
-module = ["casadi", "casadi.*", "yaml", "stable_baselines3", "stable_baselines3.*"]
+# PyYAML ships no type information; stable-baselines3 is optional and may be absent. CasADi is typed
+# by the stub under typings/.
+module = ["yaml", "stable_baselines3", "stable_baselines3.*"]
 ignore_missing_imports = true
 
 # --------- ruff --------- #
