@@ -17,8 +17,8 @@ jobs:
         with:
           version: "latest"
       - run: uv sync
-      - run: uv run ruff check src/ tests/
-      - run: uv run ruff format --check src/ tests/
+      - run: uv run ruff check src/ tests/ examples/
+      - run: uv run ruff format --check src/ tests/ examples/
 
   typecheck:
     runs-on: ubuntu-latest
