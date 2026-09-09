@@ -1,0 +1,60 @@
+env:
+  dt: 1800.0
+  episode_days: 40.0
+  action_mode: delta
+  include_previous_control: true
+  include_timestep: true
+  timestep_encoding: progress
+  weather_window: 1
+  reward:
+    prices:
+      energy_cost: 0.1281
+      co2_cost: 0.1906
+      product_price_1: 0.81680438896225
+      product_price_2: 22.285125
+    bounds:
+    - name: co2_ppm
+      lo: 500.0
+      hi: 1600.0
+      w_lo: 5.0e-05
+      w_hi: 5.0e-05
+    - name: indoor_temp
+      lo: 10.0
+      hi: 20.0
+      w_lo: 0.003
+      w_hi: 0.005
+    - name: rh
+      lo: 0.0
+      hi: 80.0
+      w_lo: 0.0007
+      w_hi: 0.0007
+  control_overrides: []
+  initial_state: []
+  initial_control: []
+weather:
+  source: bleiswijk_2014
+  start_day: 40.0
+  start_days: null
+  split: null
+parameters:
+  ranges: {}
+  relative: null
+  names: null
+  per_step: false
+train:
+  algo: ppo
+  policy: MlpPolicy
+  total_timesteps: 1000000
+  n_envs: 4
+  seed: 0
+  normalize_obs: true
+  net_arch: null
+  algo_kwargs: {}
+  device: auto
+  log_dir: runs
+  run_name: null
+  wandb: null
+  eval_every: null
+  n_eval_episodes: 1
+  checkpoint_every: null
+  action_noise_sigma: null

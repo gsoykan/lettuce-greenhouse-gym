@@ -1,0 +1,121 @@
+env:
+  dt: 1800.0
+  episode_days: 40.0
+  action_mode: delta
+  include_previous_control: true
+  include_timestep: true
+  timestep_encoding: index
+  weather_window: 13
+  reward:
+    prices:
+      energy_cost: 0.1281
+      co2_cost: 0.1906
+      product_price_1: 0.81680438896225
+      product_price_2: 22.285125
+    bounds:
+    - name: co2_ppm
+      lo: 500.0
+      hi: 1600.0
+      w_lo: 5.0e-05
+      w_hi: 5.0e-05
+    - name: indoor_temp
+      lo: 10.0
+      hi: 20.0
+      w_lo: 0.003
+      w_hi: 0.005
+    - name: rh
+      lo: 0.0
+      hi: 80.0
+      w_lo: 0.0007
+      w_hi: 0.0007
+  control_overrides: []
+  initial_state: []
+  initial_control: []
+weather:                  # train on ten KNMI years (fetch them first: lettuce-gym weather fetch-knmi --years 2001-2010 --out weather/), evaluate on Bleiswijk
+  source:
+  - knmi_344_2001
+  - knmi_344_2002
+  - knmi_344_2003
+  - knmi_344_2004
+  - knmi_344_2005
+  - knmi_344_2006
+  - knmi_344_2007
+  - knmi_344_2008
+  - knmi_344_2009
+  - knmi_344_2010
+  start_day: 40.0
+  start_days: null
+  split: null
+  files:
+    knmi_344_2001:
+      path: ../weather/knmi_344_2001.csv
+      epoch_day: 1.0
+    knmi_344_2002:
+      path: ../weather/knmi_344_2002.csv
+      epoch_day: 1.0
+    knmi_344_2003:
+      path: ../weather/knmi_344_2003.csv
+      epoch_day: 1.0
+    knmi_344_2004:
+      path: ../weather/knmi_344_2004.csv
+      epoch_day: 1.0
+    knmi_344_2005:
+      path: ../weather/knmi_344_2005.csv
+      epoch_day: 1.0
+    knmi_344_2006:
+      path: ../weather/knmi_344_2006.csv
+      epoch_day: 1.0
+    knmi_344_2007:
+      path: ../weather/knmi_344_2007.csv
+      epoch_day: 1.0
+    knmi_344_2008:
+      path: ../weather/knmi_344_2008.csv
+      epoch_day: 1.0
+    knmi_344_2009:
+      path: ../weather/knmi_344_2009.csv
+      epoch_day: 1.0
+    knmi_344_2010:
+      path: ../weather/knmi_344_2010.csv
+      epoch_day: 1.0
+  eval_source: bleiswijk_2014
+  eval_start_days: null
+parameters:
+  ranges: {}
+  relative: null
+  names: null
+  per_step: false
+train:
+  algo: sac
+  policy: MlpPolicy
+  total_timesteps: 192000
+  n_envs: 1
+  seed: 0
+  normalize_obs: true
+  net_arch: null
+  algo_kwargs:
+    learning_rate: lin_5e-3
+    buffer_size: 100000
+    learning_starts: 17460
+    batch_size: 1024
+    tau: 0.005
+    gamma: 0.95
+    ent_coef: auto
+    train_freq: 1
+    gradient_steps: 1
+    policy_kwargs:
+      net_arch:
+        pi:
+        - 128
+        - 128
+        qf:
+        - 128
+        - 128
+      activation_fn: relu
+  device: auto
+  log_dir: runs
+  run_name: null
+  wandb: null
+  eval_every: null
+  n_eval_episodes: 1
+  checkpoint_every: null
+  action_noise_sigma: 0.05

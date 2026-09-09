@@ -1,0 +1,9 @@
+lettuce-greenhouse-gym
+Copyright 2026 Gürkan Soykan, Wageningen University & Research
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This distribution includes the outdoor weather trace outdoorWeatherWurGlas2014.csv, measured at the
+WUR Glas facility in Bleiswijk, the Netherlands, described in Kempkes, Janse & Hemming (2014),
+Acta Horticulturae 1037, 83-92, https://doi.org/10.17660/ActaHortic.2014.1037.6. Please cite that
+reference in work that uses the trace.

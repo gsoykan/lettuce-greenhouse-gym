@@ -1,0 +1,71 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below, together with the van Henten papers it implements (see README)."
+type: software
+title: "lettuce-greenhouse-gym: a Gymnasium environment for the van Henten lettuce greenhouse model"
+authors:
+  - family-names: "Soykan"
+    given-names: "Gürkan"
+    email: "gurkan.soykan@wur.nl"
+    affiliation: "Wageningen University & Research"
+version: 0.1.0
+date-released: "2026-09-09"
+license: Apache-2.0
+repository-code: "https://github.com/gsoykan/lettuce-greenhouse-gym"
+url: "https://github.com/gsoykan/lettuce-greenhouse-gym"
+keywords:
+  - greenhouse
+  - gymnasium
+  - reinforcement-learning
+  - model-predictive-control
+  - van-henten
+  - lettuce
+references:
+  - type: article
+    title: "Validation of a dynamic lettuce growth model for greenhouse climate control"
+    authors:
+      - family-names: "van Henten"
+        given-names: "Eldert J."
+    journal: "Agricultural Systems"
+    volume: 45
+    issue: 1
+    start: 55
+    end: 72
+    year: 1994
+    doi: "10.1016/S0308-521X(94)90280-1"
+  - type: thesis
+    title: "Greenhouse climate management: an optimal control approach"
+    authors:
+      - family-names: "van Henten"
+        given-names: "Eldert J."
+    institution:
+      name: "Wageningen Agricultural University"
+    year: 1994
+    isbn: "9789054853213"
+    doi: "10.18174/205106"
+  - type: article
+    title: "Sensitivity analysis of an optimal control problem in greenhouse climate management"
+    authors:
+      - family-names: "van Henten"
+        given-names: "Eldert J."
+    journal: "Biosystems Engineering"
+    volume: 85
+    issue: 3
+    start: 355
+    end: 364
+    year: 2003
+    doi: "10.1016/S1537-5110(03)00068-0"
+  - type: article
+    title: "Greenhouse concept with high insulating double glass with coatings and new climate control strategies; from design to results from tomato experiments"
+    authors:
+      - family-names: "Kempkes"
+        given-names: "F. L. K."
+      - family-names: "Janse"
+        given-names: "J."
+      - family-names: "Hemming"
+        given-names: "S."
+    journal: "Acta Horticulturae"
+    issue: 1037
+    start: 83
+    end: 92
+    year: 2014
+    doi: "10.17660/ActaHortic.2014.1037.6"

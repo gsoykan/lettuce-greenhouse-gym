@@ -1,0 +1,86 @@
+# Opmerking: door stationsverplaatsingen en veranderingen in waarneemmethodieken zijn deze tijdreeksen van uurwaarden mogelijk inhomogeen! Dat betekent dat deze reeks van gemeten waarden niet geschikt is voor trendanalyse. Voor studies naar klimaatverandering verwijzen we naar de gehomogeniseerde dagreeksen <http://www.knmi.nl/nederland-nu/klimatologie/daggegevens> of de Centraal Nederland Temperatuur <http://www.knmi.nl/kennis-en-datacentrum/achtergrond/centraal-nederland-temperatuur-cnt>.
+#
+# SOURCE: ROYAL NETHERLANDS METEOROLOGICAL INSTITUTE (KNMI)
+# Comment: These time series are inhomogeneous because of station relocations and changes in observation techniques. As a result these series are not suitable for trend analysis. For climate change studies we refer to the homogenized series of daily data <http://www.knmi.nl/nederland-nu/klimatologie/daggegevens> or the Central Netherlands Temperature <http://www.knmi.nl/kennis-en-datacentrum/achtergrond/centraal-nederland-temperatuur-cnt>.
+#
+# STN         LON(east)   LAT(north)  ALT(m)      NAME
+# 344         4.447       51.962      -4.30       Rotterdam Airport
+# YYYYMMDD  : datum (YYYY=jaar;MM=maand;DD=dag)
+# HH        : tijd (HH=uur; UT.12 UT=13 MET; 14 MEZT. Uurvak 05 loopt van 04.00 UT tot 5.00 UT
+# Q         : Globale straling (in J/cm2) per uurvak / Global radiation (in J/cm2) during the hourly division
+# T         : Temperatuur (in 0.1 graden Celsius) op 1.50 m hoogte tijdens de waarneming / Temperature (in 0.1 degrees Celsius) at 1.50 m at the time of observation
+# U         : Relatieve vochtigheid (in procenten) op 1.50 m hoogte tijdens de waarneming / Relative atmospheric humidity (in percents) at 1.50 m at the time of observation
+# FH        : Uurgemiddelde windsnelheid (in 0.1 m/s). Zie http://www.knmi.nl/kennis-en-datacentrum/achtergrond/klimatologische-brochures-en-boeken / Hourly mean wind speed (in 0.1 m/s)
+# STN,YYYYMMDD,HH,    Q,    T,    U,   FH
+  344,20100101,    1,    0,    7,   78,   70
+  344,20100101,    2,    0,    5,   80,   70
+  344,20100101,    3,    0,    4,   81,   70
+  344,20100101,    4,    0,    3,   77,   70
+  344,20100101,    5,    0,    3,   77,   60
+  344,20100101,    6,    0,    0,   78,   50
+  344,20100101,    7,    0,   -3,   73,   50
+  344,20100101,    8,    0,   -7,   80,   40
+  344,20100101,    9,   12,   -5,   80,   40
+  344,20100101,   10,   27,   -2,   76,   50
+  344,20100101,   11,   72,    4,   76,   50
+  344,20100101,   12,   84,   11,   69,   60
+  344,20100101,   13,   82,   12,   66,   60
+  344,20100101,   14,   63,   10,   66,   60
+  344,20100101,   15,   33,    4,   67,   40
+  344,20100101,   16,    4,  -11,   73,   20
+  344,20100101,   17,    0,  -26,   77,   20
+  344,20100101,   18,    0,  -39,   86,   20
+  344,20100101,   19,    0,  -39,   86,   10
+  344,20100101,   20,    0,  -47,   86,   10
+  344,20100101,   21,    0,  -48,   93,   10
+  344,20100101,   22,    0,  -60,   90,   10
+  344,20100101,   23,    0,  -60,   93,   10
+  344,20100101,   24,    0,  -45,   94,   10
+  344,20100102,    1,    0,  -33,   91,   20
+  344,20100102,    2,    0,  -16,   84,   20
+  344,20100102,    3,    0,  -13,   90,   20
+  344,20100102,    4,    0,   -7,   96,   30
+  344,20100102,    5,    0,   -5,   96,   40
+  344,20100102,    6,    0,   -3,   95,   50
+  344,20100102,    7,    0,   -2,   96,   50
+  344,20100102,    8,    0,   -1,   97,   50
+  344,20100102,    9,    5,   -4,   96,   50
+  344,20100102,   10,   18,    3,   96,   50
+  344,20100102,   11,   50,   16,   94,   40
+  344,20100102,   12,   47,   12,   93,   50
+  344,20100102,   13,   34,   17,   91,   50
+  344,20100102,   14,   47,   30,   85,   50
+  344,20100102,   15,   21,   22,   87,   40
+  344,20100102,   16,    1,   11,   94,   50
+  344,20100102,   17,    0,   18,   93,   50
+  344,20100102,   18,    0,   13,   90,   40
+  344,20100102,   19,    0,    8,   92,   50
+  344,20100102,   20,    0,   12,   94,   40
+  344,20100102,   21,    0,   12,   96,   50
+  344,20100102,   22,    0,   11,   96,   40
+  344,20100102,   23,    0,    6,   97,   20
+  344,20100102,   24,    0,   -9,   93,   50
+  344,20100103,    1,    0,  -15,   90,   60
+  344,20100103,    2,    0,  -21,   86,   70
+  344,20100103,    3,    0,  -26,   80,   60
+  344,20100103,    4,    0,  -30,   78,   60
+  344,20100103,    5,    0,  -37,   79,   40
+  344,20100103,    6,    0,  -40,   86,   30
+  344,20100103,    7,    0,  -46,   89,   20
+  344,20100103,    8,    0,  -49,   90,   20
+  344,20100103,    9,   20,  -41,   89,   10
+  344,20100103,   10,   61,  -25,   85,   10
+  344,20100103,   11,   86,   -9,   84,   10
+  344,20100103,   12,   95,   -4,   78,   20
+  344,20100103,   13,   87,   -2,   73,   30
+  344,20100103,   14,   58,   -5,   75,   30
+  344,20100103,   15,   27,  -10,   77,   30
+  344,20100103,   16,    5,  -20,   82,   20
+  344,20100103,   17,    0,  -39,   89,   10
+  344,20100103,   18,    0,  -47,   93,   10
+  344,20100103,   19,    0,  -45,   96,    0
+  344,20100103,   20,    0,  -56,   96,   10
+  344,20100103,   21,    0,  -48,   97,   10
+  344,20100103,   22,    0,  -46,   96,   10
+  344,20100103,   23,    0,  -37,   93,   20
+  344,20100103,   24,    0,  -43,   96,   30

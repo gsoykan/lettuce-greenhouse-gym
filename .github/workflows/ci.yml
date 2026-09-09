@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"  # weekly (Mon 06:00 UTC) — catch new Python/dep breakage on latest
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          version: "latest"
+      - run: uv sync
+      - run: uv run ruff check src/ tests/
+      - run: uv run ruff format --check src/ tests/
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv python install 3.12
+      - run: uv sync --python 3.12 --all-extras
+      - run: uv run mypy
+
+  test:
+    # core install only: the train/plot tests skip themselves, so this proves the package
+    # works without the extras on every supported Python
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        include:
+          # one macOS cell (per-OS casadi wheel signal); macOS bills 10x on private repos.
+          # Restore the full os matrix when the repo goes public (Actions minutes become free).
+          - os: macos-latest
+            python-version: "3.14"
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          version: "latest"
+      - run: uv python install ${{ matrix.python-version }}
+      - run: uv sync --python ${{ matrix.python-version }}
+      - run: uv run pytest -v -m "not slow"
+
+  test-extras:
+    # the train/plot tests need torch; one cell is enough
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          version: "latest"
+      - run: uv python install 3.12
+      - run: uv sync --python 3.12 --all-extras
+      - run: uv run pytest -v -m "not slow"
+
+  test-lowest:
+    # the declared dependency floors must actually work
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          version: "latest"
+      - run: uv python install 3.11
+      # numpy 2.0 has wheels up to 3.12 only; pin the interpreter or uv builds it from source
+      - run: uv sync --python 3.11 --resolution lowest-direct
+      - run: uv run pytest -v -m "not slow"
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          version: "latest"
+      - run: uv build
+      - run: unzip -l dist/*.whl | grep -E "lettuce_greenhouse_gym/(data/outdoorWeatherWurGlas2014.csv|train/cli.py|plot/episode.py)"
+      - run: unzip -l dist/*.whl | grep -E "licenses/(LICENSE|NOTICE)"

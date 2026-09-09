@@ -1,0 +1,55 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+build/
+dist/
+wheels/
+sdist/
+*.egg-info/
+*.egg
+.eggs/
+
+# Unit test / coverage reports
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+.tox/
+.nox/
+
+# Jupyter
+.ipynb_checkpoints
+
+# Environments
+.venv
+env/
+venv/
+ENV/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local weather data (full CSVs live outside the package, pointed at by LETTUCE_DATA_DIR).
+# NOTE: this only ignores a repo-root `data/`; the packaged sample under
+# src/lettuce_greenhouse_gym/data/ is NOT affected and stays tracked.
+/data/
+
+# wandb CLI scratch (debug-cli logs); offline runs live under data/runs/wandb
+/wandb/
+
+runs/
