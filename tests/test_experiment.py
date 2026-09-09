@@ -111,7 +111,8 @@ def test_spec_validation():
 
 
 def test_yaml_round_trip_is_plain_data(tmp_path):
-    yaml = pytest.importorskip("yaml")
+    import yaml
+
     path = save_yaml(CUSTOM, tmp_path / "run" / "spec.yaml")  # parent dir is created
     assert load_yaml(path) == CUSTOM
     text = path.read_text()
@@ -120,7 +121,6 @@ def test_yaml_round_trip_is_plain_data(tmp_path):
 
 
 def test_hand_written_partial_yaml_loads(tmp_path):
-    pytest.importorskip("yaml")
     path = tmp_path / "spec.yaml"
     path.write_text("train:\n  algo: sac\nparameters:\n  ranges: {leak: [2e-5, 3e-5]}\n")
     spec = load_yaml(path)
@@ -131,7 +131,6 @@ def test_hand_written_partial_yaml_loads(tmp_path):
 
 def test_hand_written_scientific_notation_is_numeric(tmp_path):
     """PyYAML reads ``5e-5`` as a string (YAML 1.1); the loader must hand back numbers."""
-    pytest.importorskip("yaml")
     path = tmp_path / "spec.yaml"
     path.write_text(
         "env:\n  reward:\n    bounds:\n"
@@ -247,7 +246,6 @@ def test_weather_spec_validation():
 
 
 def test_load_yaml_anchors_relative_file_paths_to_the_yaml_directory(tmp_path):
-    pytest.importorskip("yaml")
     _write_synthetic_csv(tmp_path / "trace.csv")
     (tmp_path / "spec.yaml").write_text(
         "env: {episode_days: 0.5}\n"
@@ -339,7 +337,6 @@ def test_script_target_loads_the_epw_example(tmp_path):
 
 
 def test_load_yaml_anchors_loader_script_and_path_kwarg_to_the_yaml_directory(tmp_path):
-    pytest.importorskip("yaml")
     (tmp_path / "loaders").mkdir()
     (tmp_path / "loaders" / "gen.py").write_text(
         "from lettuce_greenhouse_gym import WeatherSeries\n"
@@ -409,7 +406,6 @@ def test_parameter_provider_spec_builds_any_provider_from_a_target(tmp_path):
 
 
 def test_weather_perturbation_spec_reaches_the_env_and_anchors_its_script(tmp_path):
-    pytest.importorskip("yaml")
     (tmp_path / "hooks.py").write_text(
         "import numpy as np\n"
         "from lettuce_greenhouse_gym import WeatherPerturbation\n"

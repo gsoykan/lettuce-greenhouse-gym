@@ -7,7 +7,7 @@ the reduced four-state climate/crop model that has become the standard benchmark
 reinforcement learning, model predictive control, and hybrid controllers in greenhouse climate
 management.
 
-The package reimplements the model from the published equations, with three runtime dependencies
+The package reimplements the model from the published equations, with four runtime dependencies
 and type-checked in CI. It ships the dynamics as a [CasADi](https://web.casadi.org/) integrator, so
 the same function the env steps can be embedded in an MPC, the standard economic reward with soft
 comfort penalties, the measured 2014 Bleiswijk weather trace the benchmark is defined on, and the
@@ -32,9 +32,9 @@ uv add lettuce-greenhouse-gym                                                   
 pip install git+https://github.com/gsoykan/lettuce-greenhouse-gym.git@v0.1.0   # a tagged source install
 ```
 
-Runtime dependencies: `gymnasium`, `numpy`, `casadi`. The 6 MB weather trace is packaged with the
-wheel; nothing is downloaded at runtime.
-Optional extras: `[train]` (Stable-Baselines3, torch, PyYAML, TensorBoard, wandb), `[plot]`
+Runtime dependencies: `gymnasium`, `numpy`, `casadi`, `pyyaml`. The 6 MB weather trace is packaged
+with the wheel; nothing is downloaded at runtime.
+Optional extras: `[train]` (Stable-Baselines3, torch, TensorBoard, wandb), `[plot]`
 (matplotlib), `[all]`.
 
 ## The model in one screen
@@ -560,7 +560,7 @@ version's DOI. Please also cite the van Henten papers above, which define the mo
   author  = {Soykan, G{\"u}rkan},
   title   = {lettuce-greenhouse-gym: a Gymnasium environment for the van Henten lettuce greenhouse model},
   year    = {2026},
-  version = {0.1.0},
+  version = {0.1.1},
   doi     = {10.5281/zenodo.22675147},
   url     = {https://github.com/gsoykan/lettuce-greenhouse-gym},
 }

@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import yaml
 
-from .._optional import require
 from ..config import (
     ActionMode,
     ControlOverride,
@@ -134,8 +134,7 @@ def from_dict(d: dict[str, Any]) -> ExperimentSpec:
 
 
 def save_yaml(spec: ExperimentSpec, path: str | Path) -> Path:
-    """Write the canonical form of ``spec``. Needs PyYAML (the ``train`` extra)."""
-    yaml = require("yaml")
+    """Write the canonical form of ``spec``."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(yaml.safe_dump(to_dict(spec), sort_keys=False))
@@ -159,7 +158,7 @@ def _coerce_scientific(value: Any) -> Any:
 
 def parse_yaml(text: str) -> Any:
     """``yaml.safe_load`` plus numbers in scientific notation, the one place YAML 1.1 surprises."""
-    return _coerce_scientific(require("yaml").safe_load(text))
+    return _coerce_scientific(yaml.safe_load(text))
 
 
 def _anchored(value: Any, base: str | Path) -> Any:

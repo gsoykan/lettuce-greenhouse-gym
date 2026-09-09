@@ -1,6 +1,6 @@
 [project]
 name = "lettuce-greenhouse-gym"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Gymnasium environment for the van Henten (1994) lettuce greenhouse climate-control model."
 readme = "README.md"
 license = "Apache-2.0"
@@ -39,6 +39,7 @@ dependencies = [
     "casadi>=3.6.7",
     "gymnasium>=1.0.0",
     "numpy>=2.0",
+    "pyyaml>=6.0.2",  # experiment specs and the CLI's --set/--config are YAML
 ]
 
 [project.optional-dependencies]
@@ -47,7 +48,6 @@ dependencies = [
 train = [
     "stable-baselines3>=2.9.0",
     "torch>=2.8",
-    "pyyaml>=6.0.2",
     "tensorboard>=2.20",
     "wandb>=0.24",
 ]

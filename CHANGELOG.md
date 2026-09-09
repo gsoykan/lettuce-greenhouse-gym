@@ -3,6 +3,14 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] - 2026-09-09
+
+### Changed
+
+- PyYAML is a core dependency instead of part of the `train` extra. Experiment specs are YAML and
+  the command line parses `--set` values and `--config` files as YAML, so on a core-only install
+  `lettuce-gym baselines --set env.episode_days=1` failed with a hint to install the training extra.
+
 ## [0.1.0] - 2026-09-09
 
 First release of the van Henten lettuce greenhouse as a Gymnasium environment.

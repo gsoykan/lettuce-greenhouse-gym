@@ -5,8 +5,6 @@ import pytest
 from lettuce_greenhouse_gym.experiment import ExperimentSpec, to_dict
 from lettuce_greenhouse_gym.train.cli import _assign, main, merge
 
-pytest.importorskip("yaml")  # merge parses values with the YAML parser
-
 
 def test_assign_creates_nested_dicts_and_replaces_null():
     tree = {"train": {"wandb": None}}

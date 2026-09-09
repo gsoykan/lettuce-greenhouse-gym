@@ -6,8 +6,8 @@ from lettuce_greenhouse_gym._optional import EXTRAS, require
 
 
 def test_require_returns_the_module_when_present():
-    pytest.importorskip("yaml")
-    assert require("yaml").__name__ == "yaml"
+    pytest.importorskip("matplotlib")
+    assert require("matplotlib").__name__ == "matplotlib"
 
 
 def test_require_names_the_extra_when_missing(monkeypatch):

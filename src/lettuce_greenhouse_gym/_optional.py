@@ -7,7 +7,6 @@ from types import ModuleType
 EXTRAS: dict[str, str] = {
     "stable_baselines3": "train",
     "torch": "train",
-    "yaml": "train",
     "tensorboard": "train",
     "wandb": "train",
     "matplotlib": "plot",

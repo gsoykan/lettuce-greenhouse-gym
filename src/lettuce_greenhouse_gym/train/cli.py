@@ -11,7 +11,8 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-from .._optional import require
+import yaml
+
 from ..baselines import AllOff, ConstantControl, GrowerHeuristic, NominalMPC, run_episode
 from ..experiment import (
     ExperimentSpec,
@@ -98,7 +99,7 @@ def _print_table(rows: list[dict[str, Any]]) -> None:
 def cmd_train(args: argparse.Namespace) -> int:
     spec = spec_from_args(args)
     if args.print_config:
-        print(require("yaml").safe_dump(to_dict(spec), sort_keys=False), end="")
+        print(yaml.safe_dump(to_dict(spec), sort_keys=False), end="")
         return 0
     from .sb3 import train, train_seeds
 
@@ -147,7 +148,7 @@ def cmd_baselines(args: argparse.Namespace) -> int:
 
     spec = spec_from_args(args)
     if args.print_config:
-        print(require("yaml").safe_dump(to_dict(spec), sort_keys=False), end="")
+        print(yaml.safe_dump(to_dict(spec), sort_keys=False), end="")
         return 0
     names = args.controllers.split(",")
     unknown = set(names) - set(BASELINES)
