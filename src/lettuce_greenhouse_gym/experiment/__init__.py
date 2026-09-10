@@ -41,6 +41,9 @@ Every key is optional and defaults to the benchmark; the canonical form written 
       per_step: false          # redraw before every transition instead of once per episode
       provider: null           # any other scheme: {target: my_study:PoolProvider, kwargs: {...}},
                                # called as target(constants, **kwargs) -> ParameterProvider
+    wrappers: []               # Gymnasium wrappers around the env, innermost first, for training and
+                               # evaluation: [{target: lettuce_greenhouse_gym.wrappers:ParameterObservation,
+                               # kwargs: {names: [leak]}}]; each is called as target(env, **kwargs)
     train:
       algo: ppo                # or sac, ddpg, td3
       policy: MlpPolicy        # any SB3 policy name
@@ -66,6 +69,7 @@ objects, used by training), :mod:`.serialize` (spec <-> dict/YAML, used by the C
 
 from .build import (
     Role,
+    apply_wrappers,
     build_env,
     build_loader,
     build_perturbation,
@@ -99,6 +103,7 @@ __all__ = [
     "WeatherLoaderSpec",
     "WeatherSpec",
     "anchor_files",
+    "apply_wrappers",
     "build_env",
     "build_loader",
     "build_perturbation",

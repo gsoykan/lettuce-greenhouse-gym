@@ -683,3 +683,26 @@ def test_observation_layout_names_every_block_with_its_slice():
         EnvConfig(episode_days=0.25, include_previous_control=False, weather_window=0)
     )
     assert [n for n, _ in bare.observation_layout] == ["observables", "timestep"]
+
+
+def test_parameters_used_lags_parameters_by_one_transition_under_per_step_draws():
+    from lettuce_greenhouse_gym import ParameterObservation
+
+    base = ParameterSet.from_defaults(MODEL_COEFFS)
+    provider = RandomizedParameterProvider(
+        base, {"heat_transfer_cover": (4.0, 8.0)}, per_step=True
+    )
+    inner = LettuceGreenhouseEnv(SHORT, parameter_provider=provider)
+    env = ParameterObservation(inner, ["heat_transfer_cover"], used=True)
+    obs, info = env.reset(seed=3)
+    np.testing.assert_array_equal(inner.parameters_used.to_array(), info["params_used"])
+    for _ in range(4):
+        announced = inner.parameters.get("heat_transfer_cover")
+        obs, _, _, _, info = env.step(np.zeros(3))
+        assert inner.parameters_used.get("heat_transfer_cover") == pytest.approx(announced)
+        assert float(obs[-1]) == pytest.approx(announced)  # told after the fact
+        assert info["params_used"][base.idx("heat_transfer_cover")] == pytest.approx(announced)
+    snap = inner.snapshot()
+    inner.step(np.zeros(3))
+    inner.restore(snap)
+    assert inner.parameters_used is snap.parameters

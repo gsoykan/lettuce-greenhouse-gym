@@ -62,6 +62,7 @@ def to_dict(spec: ExperimentSpec) -> dict[str, Any]:
         "weather": asdict(spec.weather),
         "parameters": asdict(spec.parameters),
         "train": asdict(spec.train),
+        "wrappers": [asdict(w) for w in spec.wrappers],
     }
     return _plain(raw)
 
@@ -130,6 +131,9 @@ def from_dict(d: dict[str, Any]) -> ExperimentSpec:
         weather=WeatherSpec(**weather),
         parameters=ParameterSpec(**parameters),
         train=TrainSpec(**train),
+        wrappers=tuple(
+            CallableSpec(w["target"], dict(w.get("kwargs") or {})) for w in d.get("wrappers") or []
+        ),
     )
 
 
@@ -184,7 +188,7 @@ def anchor_files(d: dict[str, Any], base: str | Path) -> dict[str, Any]:
 
     These are ``weather.files.*.path`` and, for every callable spec (``weather.loaders.*``,
     ``weather.perturbation``, ``weather.sampler``, ``weather.eval_sampler``,
-    ``parameters.provider``), a script target written as
+    ``parameters.provider``, every ``wrappers`` entry), a script target written as
     ``script.py:callable`` and a ``kwargs.path`` entry.
     """
     weather = d.get("weather") or {}
@@ -196,6 +200,8 @@ def anchor_files(d: dict[str, Any], base: str | Path) -> dict[str, Any]:
     for key in ("perturbation", "sampler", "eval_sampler"):
         _anchor_callable(weather.get(key), base)
     _anchor_callable((d.get("parameters") or {}).get("provider"), base)
+    for ws in d.get("wrappers") or []:
+        _anchor_callable(ws, base)
     return d
 
 

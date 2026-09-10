@@ -3,6 +3,16 @@
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `ExperimentSpec.wrappers`: Gymnasium wrappers named as callable specs and applied, innermost
+  first, around the env for training and evaluation alike (`apply_wrappers`). `run_episode` accepts
+  a wrapped env: resets and steps go through the wrapper, the plant is read from the bare env.
+- `LettuceGreenhouseEnv.parameters_used` and `ParameterObservation(..., used=True)`: the coefficient
+  set that drove the last transition, the "told after the fact" disclosure under per-step schemes.
+
 ## [0.1.2] - 2026-09-10
 
 ### Fixed

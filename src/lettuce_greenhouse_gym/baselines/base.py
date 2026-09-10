@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import gymnasium
 import numpy as np
 from numpy.typing import NDArray
 
@@ -114,35 +115,41 @@ class EpisodeLog:
 
 
 def run_episode(
-    env: LettuceGreenhouseEnv,
+    env: LettuceGreenhouseEnv | gymnasium.Env,
     controller: Controller,
     *,
     seed: int | None = None,
     options: dict[str, Any] | None = None,
 ) -> EpisodeLog:
-    """Run one full season closed-loop on the bare env (not a ``gym.make`` wrapper).
+    """Run one full season closed-loop.
 
-    ``options`` goes to ``env.reset`` verbatim, with the type Gymnasium gives it.
+    ``env`` is the bare env or a wrapper around one: resets and steps go through the wrapper (so
+    the observation a policy sees is the wrapped one), while the plant's state, control and weather
+    are read from the bare env, which is also what the controller receives. ``options`` goes to
+    ``env.reset`` verbatim, with the type Gymnasium gives it.
     """
+    inner = env.unwrapped
+    if not isinstance(inner, LettuceGreenhouseEnv):
+        raise TypeError(f"run_episode needs a LettuceGreenhouseEnv, got {type(inner).__name__}")
     obs, _ = env.reset(seed=seed, options=options)
-    controller.reset(env)
+    controller.reset(inner)
 
     def measure() -> NDArray[np.float64]:  # float64 from g(x); the float32 obs would lose digits
-        return np.asarray(env.measurement(env.state)).ravel()
+        return np.asarray(inner.measurement(inner.state)).ravel()
 
-    xs, ys = [env.state], [measure()]
+    xs, ys = [inner.state], [measure()]
     us, vs, rs, infos = [], [], [], []
     done = False
     while not done:
-        u = controller.control(obs, env)
-        vs.append(env.weather_forecast(1)[:, 0])
-        obs, r, terminated, truncated, info = env.step(env.encode_control(u))
+        u = controller.control(obs, inner)
+        vs.append(inner.weather_forecast(1)[:, 0])
+        obs, r, terminated, truncated, info = env.step(inner.encode_control(u))
         done = terminated or truncated
         extra = controller.step_info()
         if extra:
             info = {**info, "controller": extra}
-        us.append(env.control)  # after clipping and rate limiting, not the request
-        xs.append(env.state)
+        us.append(inner.control)  # after clipping and rate limiting, not the request
+        xs.append(inner.state)
         ys.append(measure())
         rs.append(r)
         infos.append(info)

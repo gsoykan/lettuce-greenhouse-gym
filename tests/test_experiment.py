@@ -487,3 +487,46 @@ def test_sampler_specs_replace_the_day_modes_per_role(tmp_path):
                 )
             )
         )
+
+
+# ---- wrappers ---------------------------------------------------------------------------------------
+
+
+def test_wrappers_round_trip_and_wrap_the_built_env(tmp_path):
+    from lettuce_greenhouse_gym.experiment import apply_wrappers
+
+    spec = ExperimentSpec(
+        env=EnvConfig(episode_days=0.5),
+        weather=WeatherSpec(source="synthetic", start_day=3.0),
+        wrappers=(
+            CallableSpec(
+                "lettuce_greenhouse_gym.wrappers:ParameterObservation",
+                {"names": ["leak"], "ranges": {"leak": [0.0, 1.0e-4]}},
+            ),
+        ),
+    )
+    assert from_dict(to_dict(spec)) == spec
+    saved = save_yaml(spec, tmp_path / "spec.yaml")
+    assert "!!python" not in saved.read_text()
+    assert load_yaml(saved) == spec
+    bare = build_env(spec)
+    env = apply_wrappers(spec, bare)
+    assert env.unwrapped is bare
+    assert env.observation_space.shape[0] == bare.observation_space.shape[0] + 1
+    obs, _ = env.reset(seed=0)
+    assert obs[-1] == pytest.approx(0.75e-5 / 1.0e-4)
+    log = run_episode(env, AllOff(), seed=0)
+    assert log.x.shape[0] == log.u.shape[0] + 1
+    assert apply_wrappers(ExperimentSpec(), bare) is bare
+
+
+def test_wrappers_are_validated_and_anchored(tmp_path):
+    from lettuce_greenhouse_gym.experiment import anchor_files, apply_wrappers
+
+    with pytest.raises(TypeError, match="tuple of CallableSpec"):
+        ExperimentSpec(wrappers=[CallableSpec("m:f")])
+    bad = ExperimentSpec(wrappers=(CallableSpec("builtins:id"),))
+    with pytest.raises(TypeError, match="not a gymnasium"):
+        apply_wrappers(bad, build_env(bad))
+    d = anchor_files({"wrappers": [{"target": "wrap.py:make", "kwargs": {}}]}, tmp_path)
+    assert d["wrappers"][0]["target"] == f"{(tmp_path / 'wrap.py').resolve()}:make"

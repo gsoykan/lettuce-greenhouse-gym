@@ -15,13 +15,22 @@ from numpy.typing import NDArray
 from .._optional import require
 from ..baselines import Controller, EpisodeLog, run_episode
 from ..envs.control_env import LettuceGreenhouseEnv
-from ..experiment import ExperimentSpec, Role, build_env, load_yaml, save_yaml, to_dict
+from ..experiment import (
+    ExperimentSpec,
+    Role,
+    apply_wrappers,
+    build_env,
+    load_yaml,
+    save_yaml,
+    to_dict,
+)
 from ..provenance import write_run_metadata
 
 
-def _make_env(spec: ExperimentSpec, role: Role) -> LettuceGreenhouseEnv:
-    """Module-level so ``SubprocVecEnv`` can pickle it; a lambda would fail on macOS's spawn start."""
-    return build_env(spec, role)
+def _make_env(spec: ExperimentSpec, role: Role):
+    """The spec's env inside its wrappers. Module-level so ``SubprocVecEnv`` can pickle it; a
+    lambda would fail on macOS's spawn start."""
+    return apply_wrappers(spec, build_env(spec, role))
 
 
 def make_vec_env(
@@ -157,7 +166,7 @@ def evaluate(
 ) -> EpisodeLog:
     """One full season of the policy on the spec's evaluation env."""
     controller = PolicyController(model, vecnormalize, deterministic=deterministic)
-    return run_episode(build_env(spec, "eval"), controller, seed=seed, options=options)
+    return run_episode(_make_env(spec, "eval"), controller, seed=seed, options=options)
 
 
 def return_components(log: EpisodeLog) -> dict[str, float]:

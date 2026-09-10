@@ -125,6 +125,7 @@ class LettuceGreenhouseEnv(gymnasium.Env[NDArray[np.float32], NDArray[np.floatin
         self._parameters: ParameterSet = self.model.constants
         self._c = self._parameters.to_array()
         self._c_used = self._c
+        self._parameters_used = self._parameters
         self._scenario: WeatherScenario | None = None
         self._series: WeatherSeries | None = None
         self._weather = np.zeros((self.model.exogenous.size, 0))
@@ -282,6 +283,7 @@ class LettuceGreenhouseEnv(gymnasium.Env[NDArray[np.float32], NDArray[np.floatin
 
         self._parameters = self.parameter_provider.sample(self.np_random)
         self._c_used = self._parameters.to_array()
+        self._parameters_used = self._parameters
         self._step_index = 0
         self._draw_parameters()  # the coefficients of transition 0, known before the first action
 
@@ -333,6 +335,7 @@ class LettuceGreenhouseEnv(gymnasium.Env[NDArray[np.float32], NDArray[np.floatin
         self._u_prev = u
         self._step_index += 1
         self._c_used = c
+        self._parameters_used = self._parameters  # still the set _c was taken from
 
         y = np.asarray(self._g(x_next)).ravel()
         reward, breakdown = self.reward(
@@ -389,8 +392,14 @@ class LettuceGreenhouseEnv(gymnasium.Env[NDArray[np.float32], NDArray[np.floatin
 
     @property
     def parameters(self) -> ParameterSet:
-        """The coefficient set in effect for this episode (immutable, so returned directly)."""
+        """The coefficient set the next transition will use (``info["params"]`` as a set)."""
         return self._parameters
+
+    @property
+    def parameters_used(self) -> ParameterSet:
+        """The coefficient set that drove the last transition (``info["params_used"]`` as a set);
+        at reset, the episode's initial set."""
+        return self._parameters_used
 
     @property
     def integrator(self) -> Integrator:
@@ -486,6 +495,7 @@ class LettuceGreenhouseEnv(gymnasium.Env[NDArray[np.float32], NDArray[np.floatin
         self._parameters = state.parameters
         self._c = state.parameters.to_array()
         self._c_used = self._c
+        self._parameters_used = state.parameters
         return self._observation()
 
     def encode_control(self, u: NDArray[np.floating]) -> NDArray[np.float64]:

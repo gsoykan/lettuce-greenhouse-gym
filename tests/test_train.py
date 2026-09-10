@@ -339,3 +339,29 @@ def test_evaluation_logs_the_reward_components(tmp_path):
         eval_env.close()
     header = (tmp_path / "progress.csv").read_text().splitlines()[0].split(",")
     assert {"eval/mean_reward", "eval/revenue", "eval/penalty", "eval/energy_cost"} <= set(header)
+
+
+def test_training_and_evaluation_see_the_same_wrapped_observation(tmp_path):
+    from dataclasses import replace
+
+    from lettuce_greenhouse_gym.experiment import CallableSpec
+
+    spec = replace(
+        SMOKE,
+        parameters=ParameterSpec(ranges={"leak": (0.5e-5, 1.5e-5)}),
+        wrappers=(
+            CallableSpec(
+                "lettuce_greenhouse_gym.wrappers:ParameterObservation",
+                {"names": ["leak"], "ranges": {"leak": [0.5e-5, 1.5e-5]}},
+            ),
+        ),
+        train=replace(SMOKE.train, algo="sac", total_timesteps=12, log_dir=str(tmp_path)),
+    )
+    venv = make_vec_env(spec)
+    assert venv.observation_space.shape[0] == make_vec_env(SMOKE).observation_space.shape[0] + 1
+    venv.close()
+    result = train(spec)
+    loaded_spec, model, vecnormalize = load(result.run_dir)
+    assert loaded_spec == spec
+    log = evaluate(model, loaded_spec, vecnormalize=vecnormalize)
+    assert log.u.shape == (spec.env.n_steps, 3)

@@ -255,6 +255,10 @@ class ExperimentSpec:
     weather: WeatherSpec = field(default_factory=WeatherSpec)
     parameters: ParameterSpec = field(default_factory=ParameterSpec)
     train: TrainSpec = field(default_factory=TrainSpec)
+    wrappers: tuple[CallableSpec, ...] = ()
+    """Gymnasium wrappers applied in order around the env, for training and evaluation alike; each
+    is called as ``target(env, **kwargs)`` and must return a ``gymnasium.Env``. What a policy sees
+    (a disclosed coefficient, a history window) is decided here, not in the env."""
 
     def __post_init__(self) -> None:
         for name, cls in (
@@ -266,3 +270,7 @@ class ExperimentSpec:
             value = getattr(self, name)
             if not isinstance(value, cls):
                 raise TypeError(f"{name} must be a {cls.__name__}, got {type(value).__name__}")
+        if not isinstance(self.wrappers, tuple) or not all(
+            isinstance(w, CallableSpec) for w in self.wrappers
+        ):
+            raise TypeError("wrappers must be a tuple of CallableSpec")

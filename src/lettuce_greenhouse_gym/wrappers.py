@@ -22,6 +22,10 @@ class ParameterObservation(gymnasium.ObservationWrapper):
     typically the training range, so a value outside it lands outside ``[0, 1]`` and is visible as
     such. Names without a range are appended raw. Which coefficients, and which range, are the
     caller's choices; nothing here is normalised by default.
+
+    ``used=True`` appends the set that drove the *last* transition instead of the one the next will
+    use (at reset, the episode's initial set). Under a per-season provider the two coincide; under a
+    per-step one this is the "told after the fact" disclosure, the other end of the timing question.
     """
 
     def __init__(
@@ -29,6 +33,8 @@ class ParameterObservation(gymnasium.ObservationWrapper):
         env: gymnasium.Env,
         names: Sequence[str],
         ranges: Mapping[str, tuple[float, float]] | None = None,
+        *,
+        used: bool = False,
     ) -> None:
         super().__init__(env)
         inner = env.unwrapped
@@ -54,9 +60,10 @@ class ParameterObservation(gymnasium.ObservationWrapper):
         high = np.concatenate([base.high, np.full(len(self.names), np.inf, dtype=np.float32)])
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
         self._inner = inner
+        self.used = used
 
     def observation(self, observation: NDArray[np.float32]) -> NDArray[np.float32]:
-        params = self._inner.parameters
+        params = self._inner.parameters_used if self.used else self._inner.parameters
         values = []
         for name in self.names:
             value = params.get(name)

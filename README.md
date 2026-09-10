@@ -161,7 +161,10 @@ per episode or, with `per_step=True`, redrawn every step. In a spec the latter i
 `ParameterSet` and your keyword arguments, so it reaches the CLI and training like the built-in ones.
 Whether a *policy* may see the drawn coefficients is a research question, so the env keeps them in
 `info["params"]`; `ParameterObservation(env, names, ranges)` is the wrapper that appends them to the
-observation, rescaled by a range of your choosing.
+observation, rescaled by a range of your choosing (`used=True` appends the set that drove the last
+transition instead of the one about to be used). A spec's `wrappers` list names such wrappers, so
+training and evaluation see the same observation: `wrappers: [{target:
+lettuce_greenhouse_gym.wrappers:ParameterObservation, kwargs: {names: [leak]}}]`.
 
 ### For model-based control
 

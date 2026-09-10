@@ -7,6 +7,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Literal
 
+import gymnasium
 import numpy as np
 
 from ..envs.control_env import LettuceGreenhouseEnv
@@ -174,6 +175,18 @@ def build_env(
         weather_repository=repo,
         weather_perturbation=build_perturbation(spec),
     )
+
+
+def apply_wrappers(spec: ExperimentSpec, env: LettuceGreenhouseEnv) -> gymnasium.Env:
+    """``env`` inside the spec's wrappers, first listed innermost. No wrappers: ``env`` itself."""
+    wrapped: gymnasium.Env = env
+    for ws in spec.wrappers:
+        wrapped = resolve_target(ws.target)(wrapped, **ws.kwargs)
+        if not isinstance(wrapped, gymnasium.Env):
+            raise TypeError(
+                f"wrapper {ws.target} returned {type(wrapped).__name__}, not a gymnasium.Env"
+            )
+    return wrapped
 
 
 def build_perturbation(spec: ExperimentSpec) -> WeatherPerturbation | None:
